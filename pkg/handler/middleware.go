@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"strings"
 
-
 	"errors"
+
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -31,21 +32,23 @@ func (h *Handler) userIdentify(c *gin.Context) {
 		newErrorResponse(c, http.StatusUnauthorized, err.Error())
 		return
 	}
-	c.Set("userCtx", userId)
+	c.Set(userCtx, userId)
+	logrus.Infof("User  ID set in context: %d", userId) // Логирование
 }
 
-
-func getUserid (c *gin.Context) (int, error) {
+func getUserid(c *gin.Context) (int, error) {
 	id, ok := c.Get(userCtx)
 	if !ok {
 		newErrorResponse(c, http.StatusInternalServerError, "user id is not found")
+		logrus.Error("User  ID not found in context")
 		return 0, errors.New("user id not found")
 	}
-	
-	idInt, ok := id.(int)
-	if !ok { newErrorResponse(c, http.StatusInternalServerError, "user id is invalid type ")
-	return 0, errors.New("user id not found")
 
+	idInt, ok := id.(int)
+	if !ok {
+		newErrorResponse(c, http.StatusInternalServerError, "user id is invalid type")
+		logrus.Error("User  ID is invalid type")
+		return 0, errors.New("user id not found")
 	}
 	return idInt, nil
-} 
+}
